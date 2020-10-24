@@ -322,7 +322,7 @@ void main() {
         ),
       ).called(1);
     }, overrides: <Type, Generator>{
-      FileSystem: () => MemoryFileSystem(),
+      FileSystem: () => MemoryFileSystem.test(),
       ProcessManager: () => FakeProcessManager.any(),
       Usage: () => mockUsage,
     });
@@ -472,7 +472,7 @@ include ':app'
       expect(tempDir.childFile('settings_aar.gradle').existsSync(), isTrue);
 
     }, overrides: <Type, Generator>{
-      FileSystem: () => MemoryFileSystem(),
+      FileSystem: () => MemoryFileSystem.test(),
       ProcessManager: () => FakeProcessManager.any(),
     });
 
@@ -505,7 +505,7 @@ include ':app'
       expect(tempDir.childFile('settings_aar.gradle').existsSync(), isTrue);
 
     }, overrides: <Type, Generator>{
-      FileSystem: () => MemoryFileSystem(),
+      FileSystem: () => MemoryFileSystem.test(),
       ProcessManager: () => FakeProcessManager.any(),
     });
   });
@@ -517,7 +517,7 @@ include ':app'
     FileSystem fs;
 
     setUp(() {
-      fs = MemoryFileSystem();
+      fs = MemoryFileSystem.test();
       mockArtifacts = MockLocalEngineArtifacts();
       mockProcessManager = MockProcessManager();
       android = fakePlatform('android');
@@ -786,7 +786,7 @@ flutter:
     FileSystem fs;
 
     setUp(() {
-      fs = MemoryFileSystem();
+      fs = MemoryFileSystem.test();
     });
 
     testUsingContext('returns true when the project is using AndroidX', () async {
@@ -834,7 +834,7 @@ flutter:
     MockAndroidSdk mockAndroidSdk;
 
     setUp(() {
-      fs = MemoryFileSystem();
+      fs = MemoryFileSystem.test();
       fakeProcessManager = FakeProcessManager.list(<FakeCommand>[]);
       mockAndroidSdk = MockAndroidSdk();
       when(mockAndroidSdk.directory).thenReturn('irrelevant');
@@ -1013,7 +1013,7 @@ plugin1=${plugin1.path}
 
     setUp(() {
       mockUsage = MockUsage();
-      fileSystem = MemoryFileSystem();
+      fileSystem = MemoryFileSystem.test();
       fileSystemUtils = MockFileSystemUtils();
       mockAndroidSdk = MockAndroidSdk();
       mockAndroidStudio = MockAndroidStudio();
@@ -1328,7 +1328,7 @@ plugin1=${plugin1.path}
       ProcessManager: () => mockProcessManager,
     });
 
-    testUsingContext('logs success event after a sucessful retry', () async {
+    testUsingContext('logs success event after a successful retry', () async {
       int testFnCalled = 0;
       when(mockProcessManager.start(any,
         workingDirectory: anyNamed('workingDirectory'),
@@ -1415,7 +1415,7 @@ plugin1=${plugin1.path}
       Usage: () => mockUsage,
     });
 
-    testUsingContext('performs code size analyis and sends analytics', () async {
+    testUsingContext('performs code size analysis and sends analytics', () async {
       when(mockProcessManager.start(any,
         workingDirectory: anyNamed('workingDirectory'),
         environment: anyNamed('environment')))
@@ -1457,13 +1457,14 @@ plugin1=${plugin1.path}
 
       fileSystem.file('foo/snapshot.arm64-v8a.json')
         ..createSync(recursive: true)
-        ..writeAsStringSync(r'''[
-{
-  "l": "dart:_internal",
-  "c": "SubListIterable",
-  "n": "[Optimized] skip",
-  "s": 2400
-}
+        ..writeAsStringSync(r'''
+[
+  {
+    "l": "dart:_internal",
+    "c": "SubListIterable",
+    "n": "[Optimized] skip",
+    "s": 2400
+  }
 ]''');
       fileSystem.file('foo/trace.arm64-v8a.json')
         ..createSync(recursive: true)
@@ -2056,6 +2057,59 @@ plugin1=${plugin1.path}
       Platform: () => android,
       FileSystem: () => fileSystem,
       ProcessManager: () => mockProcessManager,
+    });
+
+    testUsingContext('honors --no-android-gradle-daemon setting', () async {
+      (globals.processManager as FakeProcessManager).addCommand(
+        const FakeCommand(command: <String>[
+          '/android/gradlew',
+          '-q',
+          '--no-daemon',
+          '-Ptarget-platform=android-arm,android-arm64,android-x64',
+          '-Ptarget=lib/main.dart',
+          '-Ptrack-widget-creation=false',
+          'assembleRelease'
+        ],
+      ));
+      fileSystem.file('android/gradlew').createSync(recursive: true);
+
+      fileSystem.directory('android')
+          .childFile('gradle.properties')
+          .createSync(recursive: true);
+
+      fileSystem.file('android/build.gradle')
+          .createSync(recursive: true);
+
+      fileSystem.directory('android')
+          .childDirectory('app')
+          .childFile('build.gradle')
+        ..createSync(recursive: true)
+        ..writeAsStringSync('apply from: irrelevant/flutter.gradle');
+
+      await expectLater(() async {
+        await buildGradleApp(
+          project: FlutterProject.current(),
+          androidBuildInfo: const AndroidBuildInfo(
+            BuildInfo(
+              BuildMode.release,
+              null,
+              treeShakeIcons: false,
+              androidGradleDaemon: false,
+            ),
+          ),
+          target: 'lib/main.dart',
+          isBuildingBundle: false,
+          localGradleErrors: const <GradleHandledError>[],
+        );
+      }, throwsToolExit());
+    }, overrides: <Type, Generator>{
+      AndroidSdk: () => mockAndroidSdk,
+      AndroidStudio: () => mockAndroidStudio,
+      Artifacts: () => Artifacts.test(),
+      Cache: () => cache,
+      Platform: () => android,
+      FileSystem: () => fileSystem,
+      ProcessManager: () => FakeProcessManager.list(<FakeCommand>[]),
     });
 
     testUsingContext('build aar uses selected local engine，the engine abi is arm', () async {
