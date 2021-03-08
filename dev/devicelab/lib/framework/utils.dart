@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:flutter_devicelab/framework/adb.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
 import 'package:process/process.dart';
@@ -321,6 +322,7 @@ Future<int> exec(
   List<String> arguments, {
   Map<String, String> environment,
   bool canFail = false, // as in, whether failures are ok. False means that they are fatal.
+  StringBuffer stderr, // if not null, the stderr will be written here
   String workingDirectory,
 }) async {
   return _execute(
@@ -328,6 +330,7 @@ Future<int> exec(
     arguments,
     environment: environment,
     canFail : canFail,
+    stderr: stderr,
     workingDirectory: workingDirectory,
   );
 }
@@ -432,14 +435,31 @@ Future<String> eval(
 }
 
 List<String> flutterCommandArgs(String command, List<String> options) {
+  // Commands support the --device-timeout flag.
+  final Set<String> supportedDeviceTimeoutCommands = <String>{
+    'attach',
+    'devices',
+    'drive',
+    'install',
+    'logs',
+    'run',
+    'screenshot',
+  };
   return <String>[
     command,
+    if (deviceOperatingSystem == DeviceOperatingSystem.ios && supportedDeviceTimeoutCommands.contains(command))
+      ...<String>[
+        '--device-timeout',
+        '5',
+      ],
     if (localEngine != null) ...<String>['--local-engine', localEngine],
     if (localEngineSrcPath != null) ...<String>['--local-engine-src-path', localEngineSrcPath],
     ...options,
   ];
 }
 
+/// Runs the flutter `command`, and returns the exit code.
+/// If `canFail` is `false`, the future completes with an error.
 Future<int> flutter(String command, {
   List<String> options = const <String>[],
   bool canFail = false, // as in, whether failures are ok. False means that they are fatal.
@@ -494,7 +514,7 @@ Future<String> findJavaHome() async {
   return path.dirname(path.dirname(javaBinary));
 }
 
-Future<T> inDirectory<T>(dynamic directory, Future<T> action()) async {
+Future<T> inDirectory<T>(dynamic directory, Future<T> Function() action) async {
   final String previousCwd = cwd;
   try {
     cd(directory);
@@ -609,7 +629,7 @@ Iterable<String> grep(Pattern pattern, {@required String from}) {
 ///     } catch (error, chain) {
 ///
 ///     }
-Future<void> runAndCaptureAsyncStacks(Future<void> callback()) {
+Future<void> runAndCaptureAsyncStacks(Future<void> Function() callback) {
   final Completer<void> completer = Completer<void>();
   Chain.capture(() async {
     await callback();
@@ -730,7 +750,7 @@ Future<int> gitClone({String path, String repo}) async {
 
   await Directory(path).create(recursive: true);
 
-  return await inDirectory<int>(
+  return inDirectory<int>(
     path,
         () => exec('git', <String>['clone', repo]),
   );

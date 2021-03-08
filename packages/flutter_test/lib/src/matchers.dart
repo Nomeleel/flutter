@@ -214,7 +214,7 @@ test_package.TypeMatcher<T> isInstanceOf<T>() => isA<T>();
 
 /// Asserts that two [double]s are equal, within some tolerated error.
 ///
-/// {@template flutter.flutter_test.moreOrLessEquals.epsilon}
+/// {@template flutter.flutter_test.moreOrLessEquals}
 /// Two values are considered equal if the difference between them is within
 /// [precisionErrorTolerance] of the larger one. This is an arbitrary value
 /// which can be adjusted using the `epsilon` argument. This matcher is intended
@@ -237,7 +237,7 @@ Matcher moreOrLessEquals(double value, { double epsilon = precisionErrorToleranc
 
 /// Asserts that two [Rect]s are equal, within some tolerated error.
 ///
-/// {@macro flutter.flutter_test.moreOrLessEquals.epsilon}
+/// {@macro flutter.flutter_test.moreOrLessEquals}
 ///
 /// See also:
 ///
@@ -251,7 +251,7 @@ Matcher rectMoreOrLessEquals(Rect value, { double epsilon = precisionErrorTolera
 
 /// Asserts that two [Offset]s are equal, within some tolerated error.
 ///
-/// {@macro flutter.flutter_test.moreOrLessEquals.epsilon}
+/// {@macro flutter.flutter_test.moreOrLessEquals}
 ///
 /// See also:
 ///
@@ -483,6 +483,7 @@ Matcher matchesSemantics({
   bool hasMoveCursorBackwardByCharacterAction = false,
   bool hasMoveCursorForwardByWordAction = false,
   bool hasMoveCursorBackwardByWordAction = false,
+  bool hasSetTextAction = false,
   bool hasSetSelectionAction = false,
   bool hasCopyAction = false,
   bool hasCutAction = false,
@@ -546,6 +547,7 @@ Matcher matchesSemantics({
     if (hasDismissAction) SemanticsAction.dismiss,
     if (hasMoveCursorForwardByWordAction) SemanticsAction.moveCursorForwardByWord,
     if (hasMoveCursorBackwardByWordAction) SemanticsAction.moveCursorBackwardByWord,
+    if (hasSetTextAction) SemanticsAction.setText,
   ];
   SemanticsHintOverrides? hintOverrides;
   if (onTapHint != null || onLongPressHint != null)
@@ -685,7 +687,7 @@ class _FindsWidgetMatcher extends Matcher {
   }
 }
 
-bool _hasAncestorMatching(Finder finder, bool predicate(Widget widget)) {
+bool _hasAncestorMatching(Finder finder, bool Function(Widget widget) predicate) {
   final Iterable<Element> nodes = finder.evaluate();
   if (nodes.length != 1)
     return false;

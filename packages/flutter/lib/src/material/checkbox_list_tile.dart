@@ -26,9 +26,10 @@ import 'theme_data.dart';
 /// those of the same name on [ListTile].
 ///
 /// The [selected] property on this widget is similar to the [ListTile.selected]
-/// property, but the color used is that described by [activeColor], if any,
-/// defaulting to the accent color of the current [Theme]. No effort is made to
-/// coordinate the [selected] state and the [value] state; to have the list tile
+/// property. This tile's [activeColor] is used for the selected item's text color, or
+/// the theme's [ThemeData.toggleableActiveColor] if [activeColor] is null.
+///
+/// This widget does not coordinate the [selected] state and the [value] state; to have the list tile
 /// appear selected when the checkbox is checked, pass the same value to both.
 ///
 /// The checkbox is shown on the right by default in left-to-right languages
@@ -58,8 +59,8 @@ import 'theme_data.dart';
 ///   return CheckboxListTile(
 ///     title: const Text('Animate Slowly'),
 ///     value: timeDilation != 1.0,
-///     onChanged: (bool value) {
-///       setState(() { timeDilation = value ? 10.0 : 1.0; });
+///     onChanged: (bool? value) {
+///       setState(() { timeDilation = value! ? 10.0 : 1.0; });
 ///     },
 ///     secondary: const Icon(Icons.hourglass_empty),
 ///   );
@@ -98,10 +99,10 @@ import 'theme_data.dart';
 /// ```dart preamble
 /// class LinkedLabelCheckbox extends StatelessWidget {
 ///   const LinkedLabelCheckbox({
-///     this.label,
-///     this.padding,
-///     this.value,
-///     this.onChanged,
+///     required this.label,
+///     required this.padding,
+///     required this.value,
+///     required this.onChanged,
 ///   });
 ///
 ///   final String label;
@@ -132,7 +133,7 @@ import 'theme_data.dart';
 ///           ),
 ///           Checkbox(
 ///             value: value,
-///             onChanged: (bool newValue) {
+///             onChanged: (bool? newValue) {
 ///               onChanged(newValue);
 ///             },
 ///           ),
@@ -178,10 +179,10 @@ import 'theme_data.dart';
 /// ```dart preamble
 /// class LabeledCheckbox extends StatelessWidget {
 ///   const LabeledCheckbox({
-///     this.label,
-///     this.padding,
-///     this.value,
-///     this.onChanged,
+///     required this.label,
+///     required this.padding,
+///     required this.value,
+///     required this.onChanged,
 ///   });
 ///
 ///   final String label;
@@ -202,7 +203,7 @@ import 'theme_data.dart';
 ///             Expanded(child: Text(label)),
 ///             Checkbox(
 ///               value: value,
-///               onChanged: (bool newValue) {
+///               onChanged: (bool? newValue) {
 ///                 onChanged(newValue);
 ///               },
 ///             ),
@@ -274,6 +275,7 @@ class CheckboxListTile extends StatelessWidget {
     this.contentPadding,
     this.tristate = false,
     this.shape,
+    this.selectedTileColor,
   }) : assert(tristate != null),
        assert(tristate || value != null),
        assert(isThreeLine != null),
@@ -385,8 +387,11 @@ class CheckboxListTile extends StatelessWidget {
   /// If tristate is false (the default), [value] must not be null.
   final bool tristate;
 
-  /// {@macro flutter.material.ListTile.shape}
+  /// {@macro flutter.material.ListTileTheme.shape}
   final ShapeBorder? shape;
+
+  /// If non-null, defines the background color when [CheckboxListTile.selected] is true.
+  final Color? selectedTileColor;
 
   void _handleValueChange() {
     assert(onChanged != null);
@@ -428,7 +433,7 @@ class CheckboxListTile extends StatelessWidget {
     }
     return MergeSemantics(
       child: ListTileTheme.merge(
-        selectedColor: activeColor ?? Theme.of(context)!.accentColor,
+        selectedColor: activeColor ?? Theme.of(context).toggleableActiveColor,
         child: ListTile(
           leading: leading,
           title: title,
@@ -442,6 +447,7 @@ class CheckboxListTile extends StatelessWidget {
           autofocus: autofocus,
           contentPadding: contentPadding,
           shape: shape,
+          selectedTileColor: selectedTileColor,
           tileColor: tileColor,
         ),
       ),

@@ -230,12 +230,10 @@ void main() {
 
       await tester.pumpWidget(
         Center(
-          child: Container(
-            child: SizedBox(
-              width: 200.0,
-              height: 100.0,
-              child: AndroidView(viewType: 'webview', layoutDirection: TextDirection.ltr, key: key),
-            ),
+          child: SizedBox(
+            width: 200.0,
+            height: 100.0,
+            child: AndroidView(viewType: 'webview', layoutDirection: TextDirection.ltr, key: key),
           ),
         ),
       );
@@ -872,10 +870,10 @@ void main() {
       viewsController.registerViewType('webview');
 
       int factoryInvocationCount = 0;
-      final ValueGetter<EagerGestureRecognizer> constructRecognizer = () {
+      EagerGestureRecognizer constructRecognizer() {
         factoryInvocationCount += 1;
         return EagerGestureRecognizer();
-      };
+      }
 
       await tester.pumpWidget(
         AndroidView(
@@ -991,7 +989,7 @@ void main() {
       );
       final Element containerElement = tester.element(find.byKey(containerKey));
       final FocusNode androidViewFocusNode = androidViewFocusWidget.focusNode!;
-      final FocusNode containerFocusNode = Focus.of(containerElement)!;
+      final FocusNode containerFocusNode = Focus.of(containerElement);
 
       containerFocusNode.requestFocus();
 
@@ -1038,7 +1036,7 @@ void main() {
 
 
       final Element containerElement = tester.element(find.byKey(containerKey));
-      final FocusNode containerFocusNode = Focus.of(containerElement)!;
+      final FocusNode containerFocusNode = Focus.of(containerElement);
 
       containerFocusNode.requestFocus();
       await tester.pump();
@@ -1086,7 +1084,7 @@ void main() {
       viewsController.createCompleter!.complete();
 
       final Element containerElement = tester.element(find.byKey(containerKey));
-      final FocusNode containerFocusNode = Focus.of(containerElement)!;
+      final FocusNode containerFocusNode = Focus.of(containerElement);
 
       containerFocusNode.requestFocus();
       await tester.pump();
@@ -1337,12 +1335,10 @@ void main() {
 
       await tester.pumpWidget(
         Center(
-          child: Container(
-            child: SizedBox(
-              width: 200.0,
-              height: 100.0,
-              child: UiKitView(viewType: 'webview', layoutDirection: TextDirection.ltr, key: key),
-            ),
+          child: SizedBox(
+            width: 200.0,
+            height: 100.0,
+            child: UiKitView(viewType: 'webview', layoutDirection: TextDirection.ltr, key: key),
           ),
         ),
       );
@@ -1885,16 +1881,16 @@ void main() {
       viewsController.registerViewType('webview');
 
       await tester.pumpWidget(
-        Container(width: 300, height: 600,
+        SizedBox(width: 300, height: 600,
           child: Stack(
             alignment: Alignment.topLeft,
             children: <Widget>[
               Transform.translate(
                 offset: const Offset(0, 100),
-                child: Container(
+                child: const SizedBox(
                   width: 300,
                   height: 500,
-                  child: const UiKitView(viewType: 'webview', layoutDirection: TextDirection.ltr)),),
+                  child: UiKitView(viewType: 'webview', layoutDirection: TextDirection.ltr)),),
               Transform.translate(
                 offset: const Offset(0, 500),
                 child: Container(
@@ -1923,10 +1919,10 @@ void main() {
       viewsController.registerViewType('webview');
 
       int factoryInvocationCount = 0;
-      final ValueGetter<EagerGestureRecognizer> constructRecognizer = () {
+      EagerGestureRecognizer constructRecognizer() {
         factoryInvocationCount += 1;
         return EagerGestureRecognizer();
-      };
+      }
 
       await tester.pumpWidget(
         UiKitView(
@@ -2198,10 +2194,10 @@ void main() {
     testWidgets('PlatformViewRenderBox reconstructed with same gestureRecognizers', (WidgetTester tester) async {
 
       int factoryInvocationCount = 0;
-      final ValueGetter<EagerGestureRecognizer> constructRecognizer = () {
+      EagerGestureRecognizer constructRecognizer() {
         ++ factoryInvocationCount;
         return EagerGestureRecognizer();
-      };
+      }
 
       final PlatformViewSurface platformViewSurface = PlatformViewSurface(
               controller: controller,
@@ -2222,10 +2218,10 @@ void main() {
     testWidgets('PlatformViewSurface rebuilt with same gestureRecognizers', (WidgetTester tester) async {
 
       int factoryInvocationCount = 0;
-      final ValueGetter<EagerGestureRecognizer> constructRecognizer = () {
+      EagerGestureRecognizer constructRecognizer() {
         ++ factoryInvocationCount;
         return EagerGestureRecognizer();
-      };
+      }
 
       await tester.pumpWidget(
         PlatformViewSurface(
@@ -2348,12 +2344,10 @@ void main() {
 
       await tester.pumpWidget(
         Center(
-          child: Container(
-            child: SizedBox(
-              width: 200.0,
-              height: 100.0,
-              child: createPlatformViewLink(),
-            ),
+          child: SizedBox(
+            width: 200.0,
+            height: 100.0,
+            child: createPlatformViewLink(),
           ),
         ),
       );
@@ -2491,7 +2485,7 @@ void main() {
       );
       final FocusNode platformViewFocusNode = platformViewFocusWidget.focusNode!;
       final Element containerElement = tester.element(find.byKey(containerKey));
-      final FocusNode containerFocusNode = Focus.of(containerElement)!;
+      final FocusNode containerFocusNode = Focus.of(containerElement);
 
       containerFocusNode.requestFocus();
       await tester.pump();

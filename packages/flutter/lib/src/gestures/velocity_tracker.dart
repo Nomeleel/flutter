@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 
-import 'dart:ui' show Offset;
-
 import 'package:flutter/foundation.dart';
 
 import 'events.dart';
@@ -279,7 +277,7 @@ class VelocityTracker {
 /// estimating the velocity are both cheap.
 ///
 /// To obtain a velocity, call [getVelocity] or [getVelocityEstimate]. The
-/// esimated velocity is typically used as the initial flinging velocity of a
+/// estimated velocity is typically used as the initial flinging velocity of a
 /// `Scrollable`, when its drag gesture ends.
 ///
 /// See also:
@@ -305,7 +303,7 @@ class IOSScrollViewFlingVelocityTracker extends VelocityTracker {
       if (previousPoint == null || previousPoint.time <= time)
         return true;
       throw FlutterError(
-        'The position being added ($position) has a smaller timestamp ($time)'
+        'The position being added ($position) has a smaller timestamp ($time) '
         'than its predecessor: $previousPoint.'
       );
     }());
